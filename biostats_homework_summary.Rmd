@@ -1,0 +1,1002 @@
+---
+title: "biostats_homework_summary"
+author: "刘栋梁"
+date: "2019年6月18日"
+output: 
+  html_document: 
+    keep_md: yes
+    number_sections: yes
+    theme: spacelab
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+Sys.setlocale('LC_ALL','C')
+```
+
+# homework-3
+## question 1
+
+一、实验室欲购进一批灯泡，打算在两个供货商之间选择一家购买。选购考虑的主要因素就是灯泡使用寿命的方差大小，为此需要对供货商提供的20个样品进行检测，得到的数据如下表所示。(20’)
+
+| 供货商1 | 供货商2 |
+|---------|---------|
+| 6802    | 5884    |
+| 5730    | 5871    |
+| 5823    | 5797    |
+| 5915    | 5957    |
+| 5774    | 5803    |
+| 5880    | 5862    |
+| 5870    | 5814    |
+| 5773    | 5885    |
+| 5830    | 5856    |
+| 5841    | 5940    |
+| 5763    | 5945    |
+| 5851    | 5803    |
+| 5789    | 5864    |
+| 5796    | 5851    |
+| 5818    | 5714    |
+| 5685    | 5943    |
+| 5602    | 5830    |
+| 5841    | 5858    |
+| 5723    | 5922    |
+| 5757    | 5866    |
+
+1、检验两家供货商的灯泡使用寿命的方差有无显著差异（$\alpha$=0.05）（10’）
+
+解：检验两供应商的灯泡使用寿命的方差有无显著差异即为两个样本方差的同质性检验，可用F检验。
+
+（1）.假设$H_{0}:\sigma_{1}^{2}=\sigma_{2}^{2}$,即两供应商的灯泡使用寿命的方差无显著差异；$H_{A}:\sigma_{1}^{2}\neq\sigma_{2}^{2}$。
+
+（2）.确定显著水平$\alpha$=0.05。
+
+（3）.检验计算：
+
+```{r}
+sup_1<-c(6802,5730,5823,5915,5774,5880,5870,5773,5830,5841,5763,5851,5789,5796,5818,5685,5602,5841,5723,5757)
+sup_2<-c(5884,5871,5797,5957,5803,5862,5814,5885,5856,5940,5945,5803,5864,5851,5714,5943,5830,5858,5922,5866)
+n1<-length(sup_1)
+n2<-length(sup_2)
+var1<-var(sup_1)
+var2<-var(sup_2)
+F<-var1/var2
+F
+p<-2*(1-pf(F,df1=(n1-1),df2=(n2-1)))
+p
+
+```
+
+答：拒绝原假设，认为两家供货商灯泡使用寿命的方差存在显著差异。
+
+2、选择最合适的检验方法检验两家供应商的灯泡使用寿命有无差别。（10’）
+
+解：检验两家供应商的灯泡使用寿命有无差别即总体方差未知，且两样本都属于小样本，故应该用两组平均数差异显著性的双尾t检验。
+
+先做方差齐性检验，第一问其实已经得出结论：方差有显著差异。当然我们也可以直接通过stats包中的var.test进行检测。
+
+假设$H_{0}:\sigma_{1}^{2}=\sigma_{2}^{2}$,即两供应商的灯泡使用寿命的方差无显著差异；$H_{A}:\sigma_{1}^{2}\neq\sigma_{2}^{2}$。
+
+```{r}
+var.test(sup_1,sup_2,conf.level = 0.95,alternative = "two.sided")
+```
+
+因为两个供货商的方差存在显著差异，所以var.equal=false。以下做t检验。
+
+原假设：两供应商的灯泡使用寿命无显著差别。
+
+备择假设：两供应商的灯泡使用寿命有显著差别。
+
+```{r}
+t.test(sup_1,sup_2,var.equal=FALSE,alternative = "two.sided",conf.level = 0.95)
+```
+答：因为p=0.7169>0.05,因此不拒绝原假设，认为两供应商的灯泡使用寿命无显著差别。
+
+## R language application (25’)
+Please use R to resolve the following issues and display your R code and results. 
+
+1.  For a normal random variable X with mean 4.0, and standard deviation 1.0,
+
+a)find the probability that X is less than 2.0. (4’)
+
+b)find the value K so that P(X>K) = 0.05. (4’)
+
+```{r}
+# find the probability that X is less than 2.0.
+pnorm(2,mean = 4,sd = 1) 
+# find the value K so that P(X>K) = 0.05.
+qnorm(0.05,mean = 4,sd =1,lower.tail = FALSE)
+```
+
+2. When tossing a fair coin 8 times, 
+
+a)find the probability of seeing no heads (Hint: this is a binomial distribution.) (3’)
+
+b)find the probability of seeing exactly 4 heads. (3’)
+
+c)find the probability of seeing more than 5 heads. (3’)
+
+It is a fair coin,so the prop = 0.5.
+
+```{r}
+# find the probability of seeing no heads
+dbinom(0,8,0.5)
+# find the probability of seeing exactly 4 heads.
+dbinom(4,8,0.5)
+# find the probability of seeing more than 5 heads.
+pbinom(5,8,0.5,lower.tail = FALSE)
+
+```
+
+3. Simulate a sample of 1000 random data points from a normal distribution with mean 100 and standard deviation 8, and store the result in a vector. 
+
+a)plot a histogram and a boxplot of the vector you just created. (4’)
+
+```{r}
+set.seed(46)
+n1000 <- rnorm(1000,mean = 100,sd = 8)
+hist(n1000, main = "Histogram of n1000")
+boxplot(n1000,main = "Histogram of n1000")
+```
+
+b)using the data above, test the hypothesis that the mean equals 100 (using t.test). (4’)
+
+（1）.假设$H_{0}:\mu_{1}=\mu_{2}$,即样本与总体均值之间并无显著差异；$H_{A}:\mu_{1}\neq\mu_{2}$。
+
+（2）.确定显著水平$\alpha$=0.05。
+
+（3）.检验计算：
+```{r}
+t.test(n1000,mu=100)
+```
+
+因为p值大于0.05，所以不拒绝原假设，认为样本与总体之间并无显著差异。
+
+## R language application. (25’)
+
+（Please use R to read-in and manipulate data, code and results should be displayed.）
+
+In order to detect air quality, a city's environmental protection department conducted a random test of PM2.5 in the air every few weeks. It is known that the average value of PM2.5 per cubic meter of air in the city is 82ug/m3. In the most recent test, the value of PM2.5 per cubic meter of air(ug/m3) is shown in the homework3_data.
+
+1)Show your work directory (2’)
+```{r}
+getwd()
+```
+2)use R to read in the data（3’） 
+
+```{r}
+# File is in your work directory, '~' means your  work directory.
+pm25 <- read.delim("./data/homework3_data.txt")
+
+```
+
+3)use boxplot to show the PM2.5 distribution in every month (10’)
+
+```{r}
+boxplot(PM2.5_score~Month,pm25,main = "The PM2.5 distribution in every month")
+```
+4)get the data of month equal to March and store in data_march (10’)
+
+```{r}
+data_march <- subset(pm25,Month=="March")
+head(data_march)
+```
+
+## question 4
+Suppose we draw a sample of size 20 of birthweights from a hospital, the details can be found in the homework data. The mean of national-wide birthweights is 118. (30’)
+
+```{r}
+library(readr)
+birthweights <- read_csv("./data/homework4_data.csv")
+head(birthweights)
+summary(birthweights$Birthweight)
+```
+
+1)What is the probability that the mean birthweight of the sample falls between 100.0 and 126.0? Please list the formulas for this and also the R code for it.(5’)
+
+because $\sigma^{2}$ is unknown and $n$ is less than 20,so we should use $t$-distribution to calcuate probability that we need. 
+
+$$S_{\overline{X}}=\frac{S}{\sqrt{n}}$$
+
+$$
+\mathrm{P}(100.0 \leq \mu \leq 126.0)=pt_{n-1}\left(\frac{126-\overline{X}}{S_{\overline{X}}}\right)-pt_{n-1}\left(\frac{100-\overline{X}}{S_{\overline{X}}}\right)
+$$
+
+
+```{r}
+n <- 20
+mu <- 118
+df <- n-1
+mean <- mean(birthweights$Birthweight)
+sd <- sd(birthweights$Birthweight)
+Sx <- sd/sqrt(n)
+p_126 <- pt((126-mu)/Sx,df)
+p_100 <- pt((100-mu)/Sx,df)
+p <- p_126-p_100
+p
+```
+
+So the probability that the mean birthweight of the sample falls between 100.0 and 126.0 is 0.9961359.
+
+2)What is the 95% confidence interval of the sample mean?(5’)
+
+$$
+P\left(\overline{X}-t_{d f, 1-\alpha / 2} \frac{s}{\sqrt{n}} \leq \mu_{0} \leq \overline{X}+t_{d f, 1-\alpha / 2} \frac{s}{\sqrt{n}}\right)=1-\alpha
+$$
+
+```{r}
+a <- 0.05
+P <- 1-a/2
+L1 <- mean - qt(P,n-1)*Sx
+L2 <- mean + qt(P,n-1)*Sx
+L1;L2
+```
+So the 95% confidence interval of the sample mean is [114.378,125.622].
+
+3)Can we say the underlying mean birthweight from this hospital is higher than the national average?
+
+Please list the formulas for this and also the R code for it.(5’)
+
+（1）.假设$H_{0}:\mu_{1}\leqslant\mu_{2}$,这家医院的新生儿体重小于或等于全国平均水平；$H_{A}:\mu_{1} > \mu_{2}$。
+
+（2）.确定显著水平$\alpha$=0.05。
+
+（3）.检验计算：
+
+
+$$S_{\overline{X}}=\frac{S}{\sqrt{n}}$$
+$$
+\mathrm{t}=\frac{\overline{\mathrm{x}}-\mu_{0}}{S_{\overline{X}}}
+$$
+
+$$
+\mathrm{p}=1-\mathrm{pt}_{\mathrm{n}-1}(\mathrm{t})
+$$
+```{r}
+t.test(birthweights$Birthweight,alternative = "greater",mu = 118)
+```
+
+p>0.05,so maybe we can not say the underlying mean birthweight from this hospital is higher than the national average.
+
+
+4)Test the hypothesis that the mean birthweight of sample size 20 is different from the national average (Significance level 0.05). Please list the formulas for this and also the R code for it.(5’)
+
+（1）.假设$H_{0}:\mu_{1}=\mu_{2}$,即这家医院新生儿体重和全国新生儿体重平均值之间并无显著差异；$H_{A}:\mu_{1}\neq\mu_{2}$。
+
+（2）.确定显著水平$\alpha$=0.05。
+
+（3）.检验计算：
+
+$$S_{\overline{X}}=\frac{S}{\sqrt{n}}$$
+$$
+\mathrm{t}=\frac{\overline{\mathrm{x}}-\mu_{0}}{S_{\overline{X}}}
+$$
+
+$$
+\mathrm{p}=2 \times \min \left(\mathrm{pt}_{\mathrm{n}-1}\left(\frac{\overline{\mathrm{x}}-\mu_{0}}{\mathrm{s} / \sqrt{\mathrm{n}}}\right), 1-\mathrm{pt}_{\mathrm{n}-1}\left(\frac{\overline{\mathrm{x}}-\mu_{0}}{\mathrm{s} / \sqrt{\mathrm{n}}}\right)\right)
+$$
+
+```{r}
+t.test(birthweights$Birthweight,alternative = "two.sided",mu = 118)
+```
+p-value = 0.4657>0.05,不拒绝原假设，认为这家医院新生儿体重和全国新生儿体重平均值之间并无显著差异。
+
+5)Compute the power of the test performed in (4) with significance level 0.05.(5’)
+$$
+Power=\mathrm{F}\left[\mathrm{t}_{\alpha / 2}+\frac{\left|\overline{\mathrm{X}}-\mu_{0}\right|}{\mathrm{s} / \sqrt{\mathrm{n}}}\right]
+$$
+```{r}
+power <- pt(qt(a/2,df)+abs(mean-mu)/Sx,n-1)
+power
+```
+
+So,the power of the test performed in (4) with significance level is 0.09667934.
+
+6)To see the significance difference between the sample mean and the national mean and ensure the type II error to be $\beta$ =0.05, what is the appropriate sample size with significance level is 0.01?(5’)
+
+$$
+\mathrm{n}=\frac{\left(\mathrm{z}_{1-\beta}+\mathrm{z}_{1-\alpha / 2}\right)^{2} \mathrm{S}^{2}}{\left(\overline{\mathrm{x}}-\mu_{0}\right)^{2}}
+$$
+
+```{r}
+# 使用pwr包进行估计
+# install.packages("pwr")
+library("pwr")
+d = abs(mean-mu)/sd
+pwr.t.test(d=d,power=0.95,sig.level=0.01,type="one.sample",alternative="two.sided")
+```
+
+So,the appropriate sample size with significance level=0.01 is 647.
+
+# homework-4
+## question 1
+
+一、为研究某种新药对抗凝血酶活力的影响，随机安排新药组病人12例，对照组病人10例，分别测定器抗凝血酶活力（单位：），其结果如下：
+
+      新药组：126 125 138 128 123 138 142 116 110 108 113 140
+      
+      对照组：160 175 177 170 175 153 168 159 160 162
+      
+试分析新药组和对照组病人的抗凝血酶活力有无差别（$\alpha$ = 0.05）
+
+解：
+
+（1）检验两组样本方差是否相同 (15’)
+
+假设检验：
+
+$H_{0}$:两组样本方差不存在差异。
+
+$H_{1}$:两组样本方差不存在差异。
+
+先做正态检验，再做方差检验。
+```{r}
+new_drug <- c(126,125,138,128,123,138,142,116,110,108,113,140)
+control <- c(160,175,177,170,175,153,168,159,160,162)
+# 原假设：样本符合正态分布；备择假设：样本不符合正态分布。
+shapiro.test(new_drug)
+shapiro.test(control)
+var.test(new_drug,control)
+```
+结果显示两样本符合正态分布，p=0.26>0.05,可认为两组样本方差一致（$\alpha$ = 0.05）
+
+（2）选择最合适的检验方法检验新药组和对照组病人的抗凝血酶活力有无差别。(15’)
+
+假设检验：
+
+$H_{0}$:两组样本抗凝血酶活力无差别。
+
+$H_{1}$:两组样本抗凝血酶活力有差别。
+
+```{r}
+t.test(new_drug,control,var.equal = TRUE,alternative = "two.sided",conf.level = 0.95)
+```
+
+p  < 0.05,可认为新药组和对照组病人的抗凝血酶活力有显著差别。（$\alpha$ = 0.05）
+
+## question 2
+
+二、对7位健康成年人的血液测量其中的尿酸浓度，分别用手工（X）和仪器（Y）两种方法测量，结果如下表所示，请用wilcoxon signed-rank test来检测两种测量方法的精度是否存在差异? （$\alpha$ = 0.05）(20’)
+
+| 手工(X) | 4.5 | 6.5 | 6 | 9.2 | 10  | 12 | 8.3  |
+|---------|-----|-----|---|-----|-----|----|------|
+| 仪器(Y) | 4   | 7.2 | 8 | 14  | 8.8 | 10 | 11.5 |
+
+解：假设检验：
+
+$H_{0}$:两种测量方法的精度不存在差异。
+
+$H_{1}$:两种测量方法的精度存在差异。
+
+```{r}
+handmade <- c(4.5,6.5,6,9.2,10,12,8.3)
+device <- c(4,7.2,8,14,8.8,10,11.5)
+wilcox.test(handmade,device,alternative = "two.sided",paired = TRUE,exact=FALSE)
+```
+
+因为p-value = 0.3972>0.05，所以不拒绝原假设，认为两种测量方法的精度不存在差异。
+
+## question 3
+
+三、在某保险种类中，一次关于2018年的索赔数额（单位：元）的随机抽样为（按升幂排列）：
+
+       4152，4579，5053，5112，5745，6250，7081，9048，
+       
+       12095，14430，17220，20610，22836，48950，67200
+       
+已知2017年的索赔数额的中位数为7520元。问2018年索赔的中位数与前一年是否有所变化？（$\alpha$ = 0.05）(15’)
+
+Hint: You can use wilcox.test
+
+解：假设检验问题：
+$H_{0}$:2018年索赔的中位数与前一年无变化。
+
+$H_{0}$:2018年索赔的中位数与前一年有变化。
+
+```{r}
+insurance <- c(4152,4579,5053,5112,5745,6250,7081,9048,12095,14430,17220,20610,22836,48950,67200)
+
+wilcox.test(insurance,mu=7520)
+```
+
+p-value = 0.1354>0.05,所以不拒绝原假设，认为2018年索赔的中位数与前一年无变化。（$\alpha$ = 0.05）
+
+## question 4
+
+Type 1 diabetes is a multigenic disease caused by T-cell mediated destruction of the insulin producing β-cells. Although conventional (targeted) approaches of identifying causative genes have advanced our knowledge of this disease, many questions remain unanswered.
+
+Here we have a gene data from NOD mouse after(case) and before(control) treatment. The data can be found in "Data.txt”.Use the information mentioned above to answer the following questions:
+
+a)use paired t-test to find genes which have significant expression (p<0.05) between case and control sample. Give the number of differential expressed genes and give the names of top 10 significantly differential expression genes. hint: “apply(data,1,function(x){…})” can apply function to every row in data more quickly than “for{}”, “names()” or “rownames()” can be used to extract names of differentially expressed genes.( 20’)
+
+```{r}
+# 导入数据
+expression_data <- read.table('./data/Data.txt',header = T,stringsAsFactors =F )
+# View(expression_data) ##观察数据可发现前十列为control组，后十列为case组
+
+
+# 定义函数根据方差检验结果做成对t.test
+t.test.p.value <- function(x){
+  p_value <- t.test(x[1:10],x[11:20],paired = TRUE)$p.value
+  p_value
+}
+
+p.t.test <- apply(expression_data,1,t.test.p.value)
+
+#  Give the number of differential expressed genes 
+sum(p.t.test<0.05)
+#  give the names of top 10 significantly differential expression genes
+names(p.t.test[order(p.t.test,decreasing=F)[1:10]])
+```
+
+b)Adjust the p-values in question a) with bonferroni and FDR method to find differentially expressed genes in stringent way( list the differentially expressed gene names and the adjusted p-value). (15’)
+
+Hint: you can do the adjustment according to the fomular, or use “p.adjust()” instead.
+
+```{r}
+p.bonf <- p.adjust(p.t.test,'bonferroni')
+p.fdr <- p.adjust(p.t.test,'fdr')
+p.bonf[p.bonf<0.05]
+p.fdr[p.fdr<0.05]
+```
+
+经过校正后发现,并无显著差异表达基因。
+
+# homework-5
+## question-1
+
+一、在一个农业实验中，育种人员测试了3种不同的种子的粮食产量（单位：共计/亩），结果记录在数据yield.txt中。（20’）请问
+
+解：
+
+（1）种子的品种是否影响粮食产量；（10’）
+
+用方差分析方法检验种子的品种是否影响粮食产量
+
+$H_{0}$：种子的品种不影响粮食产量；
+
+$H_{1}$：至少一个种子的品种影响粮食产量。
+
+```{r}
+yield <- read.delim("./data/yield.txt")
+
+# H0:数据符合正态分布 H1：数据不符合正态分布。
+shapiro.test(yield$yield[yield$seed==1])
+shapiro.test(yield$yield[yield$seed==2])
+shapiro.test(yield$yield[yield$seed==3])
+# 满足正态分布。
+# H0：数据方差齐性 H1：数据方差非齐性
+bartlett.test(yield~seed,data = yield)
+# 满足方差齐次性。
+
+seed_aov <- aov(yield~factor(seed),data = yield)
+summary(seed_aov)
+
+```
+
+答：检验结果显示p值小于0.05，因此拒绝原假设，种子的品种会影响粮食产量。
+
+（2）如果受品种影响，那么哪一个品种和其他品种的产量有差异。（10’）
+```{r}
+tukey_results <- TukeyHSD(seed_aov);tukey_results
+plot(tukey_results)
+# 置信区间包含0说明差异并不显著。
+```
+
+答：品种二和其他品种的产量有差异。
+
+或者用pairwised-t检验分析哪个品种的产量和其他品种不同。
+
+```{r}
+pairwise.t.test(yield$yield,yield$seed,p.adjust.method = "none")
+
+```
+
+结果显示种子1和种子3的t检验的p值大于0.05，而种子2和其他两者的t检验p值均小于0.05，因此种子2和其他种子相比产量有差异。
+
+## question-2
+
+二、为研究茶多酚保健饮料对急性缺氧的影响，某研究者将60只小白鼠随机分为低、中、高三个剂量组和一个对照组，每组15只老鼠。对照组给予蒸馏水0.25ml灌胃，低中高分别给予递增剂量的饮料，并将饮料溶于0.2~0.3ml蒸馏水后灌胃。每天一次，40天后，对小鼠进行耐缺氧存活时间试验，结果见数据文件。（30’）
+
+解：
+
+1.在本次试验中，为研究不同剂量的茶多酚保健饮料对延长小白鼠的平均耐缺氧存货时间有无差异。问因素或者处理是什么？，与之相对的有多少个分组或者水平？（5’）
+
+答:
+
+因素：不同剂量的茶多酚保健饮料
+
+四个处理：对照、低、中、高组
+
+2.请将数据读入R中，并用Boxplot查看总体数据的情况，最后查看一下数据的最小值、中位数、平均数等信息。（5’）
+
+```{r}
+data <- read.delim("./data/data2.txt")
+boxplot(data)
+summary(data)
+```
+
+3.有研究员对上述资料采用了两样本均数t检验进行了两两比较。问这样处理是否合理，为什么？应采用何种处理方法。（5’）
+
+答：不合理，t检验适合两组数据的检验，用于多组数据会增大犯一型错误的概率。对于多组数据的差异研究，应该采用方差分析。
+
+4.为了用更好的方法来处理数据，请说明数据应满足的哪三个基本条件？试检验这批数据是否满足这些条件。（提示：一般需要满足三个条件；shapiro.test()函数可检验正态性，bartlett.test()可检验多个正态总体的方差齐次性）（5’）
+
+答：
+
+方差分析的基本假设：
+
+（1）各总体的方差必须相等。
+
+```{r}
+# H0：数据方差齐性 H1：数据方差非齐性
+bartlett.test(data)
+
+```
+满足方差齐性。
+
+（2）各总体必须服从正态分布。
+
+```{r}
+# H0:数据符合正态分布 H1：数据不符合正态分布。
+shapiro.test(data$control)
+shapiro.test(data$low)
+shapiro.test(data$middle)
+shapiro.test(data$high)
+
+```
+经检验，各总体服从正态分布。
+
+（3）各观测值相互独立
+
+可以通过控制抽样过程来控制独立性，无具体的检验方法。
+
+5.请根据上述验证情况，对数据进行分析，并给出差异的配对组别（10’）
+
+$H_{0}$四个总体均值相等。
+$H_{A}$至少有一个不等，$\alpha$ =0.05
+
+```{r}
+time <- c(data$control,data$low,data$middle,data$high)
+
+levels <- factor(c(rep("control",15),rep("low",15),rep("middle",15),rep("high",15)))
+time_aov <- aov(lm(time~levels))
+summary(time_aov)
+
+TukeyHSD(time_aov)
+plot(TukeyHSD(time_aov))
+
+```
+
+答:除low组和control组经检验不具有显著性差异，其他组都具有显著差异。
+
+## question-3
+
+三、已知有三种药物都能促进小鼠肠道对营养的吸收，现将初始状态相近的两批成年小鼠分别进行给药，经过一段时间后测量其体重，然后得到这段时间内小鼠体重增加的值。问：这三种药导致的平均体重增加值有无统计学差异？（20’）
+
+| 药物1（增加的体重值g） | 药物2（增加的体重值g） | 药物3（增加的体重值g） |
+|------------------------|------------------------|------------------------|
+| 40                     | 50                     | 60                     |
+| 10                     | 20                     | 30                     |
+| 35                     | 45                     | 100                    |
+| 25                     | 55                     | 85                     |
+| 20                     | 20                     | 20                     |
+| 15                     | 15                     | 55                     |
+| 35                     | 80                     | 45                     |
+| 15                     | -10                    | 30                     |
+| -5                     | 105                    | 77                     |
+| 30                     | 75                     | 105                    |
+| 25                     | 10                     |                        |
+| 70                     | 60                     |                        |
+| 65                     | 45                     |                        |
+| 45                     | 60                     |                        |
+| 50                     | 30                     |                        |
+
+解：
+求均值的统计学差异，用ANOVA来解决。
+
+H0：三种药物对小鼠体重均值的影响都相同；
+
+H1：三种药物对小鼠体重均值的影响至少有一个不同。
+
+```{r}
+# 输入数据
+weight1 <- c(40,10,35,25,20,15,35,15,-5,30,25,70,65,45,50)
+weight2 <- c(50,20,45,55,20,15,80,-10,105,75,10,60,45,60,30)
+weight3 <- c(60,30,100,85,20,55,45,30,77,105)
+# 正态性检验
+shapiro.test(weight1)
+shapiro.test(weight2)
+shapiro.test(weight3)
+weights <- c(weight1,weight2,weight3)
+drugs <- factor(c(rep("drug1",15),rep("drug2",15),rep("drug3",10)))
+
+# 方差齐性检验
+bartlett.test(weights,g = drugs)
+
+#方差分析
+weight_aov <- aov(lm(weights~drugs))
+summary(weight_aov)
+
+TukeyHSD(weight_aov)
+plot(TukeyHSD(weight_aov))
+
+```
+
+答:经检验，药物3与药物1导致的平均体重增加值之间存在显著差异，其他药物导致的平均体重增加值之间不存在显著差异。
+
+## question-4
+四、在一生物实验中，为了研究不同饲养条件对大鼠体重的影响，现将60只8周龄体重相等的大鼠随机分为六组，分别放入以下饲养条件中培养两周：
+
+A：饲养温度（℃）  4（A1），25（A2），30（A3）
+
+B：饲料：普通饲料（B1），高脂饲料（B2）
+
+|    | A1    | A2    | A3    |
+|----|-------|-------|-------|
+| B1 | 282.1 | 296.7 | 300.1 |
+|    | 264.2 | 318   | 307.5 |
+|    | 274.2 | 295.3 | 294.2 |
+|    | 276.4 | 292.8 | 312   |
+|    | 283.7 | 304.5 | 300.2 |
+|    | 288   | 305.9 | 292.6 |
+|    | 274.3 | 312.3 | 302   |
+|    | 278.4 | 311.4 | 306.9 |
+|    | 293.5 | 307.6 | 313.3 |
+|    | 271.5 | 292.7 | 312.4 |
+| B2 | 284.5 | 296.6 | 304   |
+|    | 263.7 | 323.9 | 312.4 |
+|    | 292.3 | 296.5 | 297.8 |
+|    | 270.3 | 298.1 | 318.4 |
+|    | 281.3 | 310   | 302.4 |
+|    | 286.9 | 312.5 | 295.3 |
+|    | 271.2 | 317.6 | 305.5 |
+|    | 275.6 | 305.5 | 309.9 |
+|    | 289.4 | 305.8 | 319.2 |
+|    | 289.8 | 295.4 | 320.2 |
+
+
+解：
+
+（1）检验体重数据对于因素A和因素B是否是正态的？是否满足方差齐性的要求？（10分）
+
+将数据整理成csv并导入。
+```{r}
+library(readr)
+rat_weight <- read_csv("./data/biostats_homework_weight.csv")
+shapiro.test(rat_weight$weight[rat_weight$A=="A1"])
+shapiro.test(rat_weight$weight[rat_weight$A=="A2"])
+shapiro.test(rat_weight$weight[rat_weight$A=="A3"])
+shapiro.test(rat_weight$weight[rat_weight$B=="B1"])
+shapiro.test(rat_weight$weight[rat_weight$B=="B2"])
+bartlett.test(weight~A,data = rat_weight)
+bartlett.test(weight~B,data = rat_weight)
+
+```
+答：经检验，体重数据对于因素A和因素B是正态的，并满足方差齐性的要求。
+
+（2）试分析因素A、因素B以及两因素的相互作用对大鼠体重有无显著影响？（10分）
+```{r}
+rat_fit<-aov(weight~A+B+A:B,data = rat_weight)
+summary(rat_fit)
+```
+
+答:因素A对大鼠体重有显著影响
+
+（3）对$A_{i}B_{j}$条件下平均产量作多重比较，并指出与$A_{2}B_{1}$组有显著差异的组。（10分）
+```{r}
+TukeyHSD(rat_fit)
+
+```
+
+答:$A_{1}B_{1}$，$A_{1}B_{2}$组和$A_{2}B_{1}$组有显著差异（3分）
+
+# homework-6
+## question-1
+一、某地29名13岁儿童身高（cm），体重（kg）和肺活量（L）数据见data，求： 
+（1）由身高，体重推算肺活量的回归方程；
+（2）求出的方程是否有意义；
+（3）剩余标准差
+
+```{r}
+library(readxl)
+homework_6_1_data <- read_excel("./data/homework-6.1-data.xlsx")
+y <- homework_6_1_data$y
+x1 <- homework_6_1_data$x1
+x2 <- homework_6_1_data$x2
+ff <- lm(y~x1+x2)
+ff
+summary(ff)
+```
+
+答：
+
+(1)回归方程：$y=-0.565664+0.005017x1+0.054061x2$。
+
+(2)因为F=15.63，p=3.485e-05<0.01，所以方程有意义。(这个具体为什么用F检验，看书吧)
+
+(3)剩余标准差(Residual standard error): 0.3137 on 26 degrees of freedom
+
+## question-2
+
+二、某农场通过试验取得早稻收获量与春季降雨量和春季温度的数据如下：
+
+| 收获量y(kg/mm2) | 降雨量x1(mm) | 温度x2(℃) |
+|-----------------|--------------|-----------|
+| 2250            | 25           | 6         |
+| 3450            | 33           | 8         |
+| 4500            | 45           | 10        |
+| 6750            | 105          | 13        |
+| 7200            | 110          | 14        |
+| 7500            | 115          | 16        |
+| 8250            | 120          | 17        |
+
+建立早稻收获量对春季降雨量和春季温度的二元线性回归方程，计算各回归系数的置信区间，并对回归模型的线性关系和回归系数进行检验（$\alpha$ =0.05）。
+```{r}
+library(readr)
+homework_6_2_data <- read_delim("./data/homework-6.2-data.txt", 
+    "\t", escape_double = FALSE, trim_ws = TRUE)
+y <- homework_6_2_data$y
+x1 <- homework_6_2_data$x1
+x2 <- homework_6_2_data$x2
+ff <- lm(y~x1+x2)
+ff
+# 置信区间
+confint(ff)
+
+```
+降雨量x1的置信区间为（-4.268921，49.04184），含义是在温度不变的条件下，降雨量每变动1mm，收获量的平均变动在-4.268921到49.04184 kg/mm2之间。
+
+温度x2的置信区间为（53.364699，601.97873），含义是在降雨量不变的条件下，温度每变动1℃，收获量的平均变动在53.364699到601.97873 kg/mm2之间。
+
+```{r}
+summary(ff)
+
+```
+线性关系检验是检验因变量y与k个自变量之间的关系是否显著，也称总体显著性检验。具体步骤如下：
+
+第1步 提出假设：
+
+$$H_{0}:\beta_{1}=\beta_2=...=\beta_{k}=0 $$
+$$H_{1}:\beta_{1},\beta_2,...,\beta_{k}至少有一个不等于0 $$
+       
+第2步 计算检验统计量F：
+
+$$F=\frac{SSR/k} {SSE/(n-k-1)} \sim  F(k,n-k-1)$$
+      
+第3步 做出决策。给定显著水平$\alpha$，根据分子的自由度=$k$，分母的自由度=$n-k-1$计算出统计量的P值。若P< $\alpha$，拒绝原假设，表明y与k个自变量之间的线性关系显著。
+根据以上R输出结果，检验统计量F= 228.4，显著水平P= 7.532e-05< 0.05，拒绝$H_{0}$，即收获量y与降雨量x1和温度x2之间的线性关系显著。
+
+4、要判断每个自变量对因变量的影响是否都显著，需要对各回归系数$\beta_{i}$分别进行t检验，具体步骤如下：
+第1步 提出假设。对于任意参数$\beta_{i}( i=1,2,…,k)$，有
+
+$$H_{0}:\beta = 0,H_{1}:\beta \neq 0$$
+         
+第2步 计算检验的统计量t：
+
+$$t_{i}= \frac{\hat{\beta_{i}}}{s_{\hat{\beta_{i}}}} \sim t(n-k-1)$$
+         
+其中：是回归系数的抽样分布的标准差。
+第3步 做出决策。给定显著性水平$\alpha$，根据自由度= n-k-1计算出统计量的P值。若P< $\alpha$，则拒绝原假设，表明回归系数$β_{i}$显著。
+根据R输出结果，降雨量x1和温度x2的回归系数相应的显著水平分别为0.0801和0.0295，只有温度对应的显著性水平小于0.05通过检验，这表明影响收获量的自变量中，只有温度对收获量的影响显著，而降雨量对收获量的影响不显著。
+
+## question-3
+
+三、某葡萄酒爱好者想探索葡萄酒的品质与哪些因素相关。他有一个数据集包含了（1 -固定酸度，2 -挥发性酸度，3 -柠檬酸，4 -残余糖，5 -氯化物，6 -自由二氧化硫量，7 -二氧化硫总量，8 -密度，9 - pH值，10 -硫酸盐，11 -酒精浓度，和12 -品质(0 - 10分)。
+
+1.查看数据集的前五行和数据集的总结。
+
+```{r}
+library(readr)
+winequality <- read_csv("./data/homework-6.3-winequality-red.csv")
+head(winequality,n=5)
+summary(winequality)
+```
+2.通过直方图展示固定酸度的分布和展示挥发性酸度与品质的散点图。
+```{r}
+library(ggplot2)
+fixed_acidity <- winequality$`fixed acidity`
+hist=ggplot(winequality,aes(x=fixed_acidity))+geom_histogram(stat="bin",binwidth = 0.1)
+hist
+volatile_acidity <- winequality$`volatile acidity`
+quality <- winequality$quality
+point <- ggplot(winequality,mapping = aes(x=volatile_acidity,y=quality))+geom_point()
+point
+```
+
+3.计算这些变量与品质的相关性。
+```{r}
+quality_cor <- cor(winequality[1:11],winequality$quality)
+quality_cor
+```
+4.通过方差分析不同品质的葡萄酒的酒精浓度是否有差异。
+```{r}
+alcohol <- winequality$alcohol
+alcohol_anova <- data.frame(alcohol,quality)
+# 方差齐性检验
+bartlett.test(alcohol_anova)
+# 正态检验
+for (i in c(3:8)) {
+  print(shapiro.test(alcohol_anova$alcohol[alcohol_anova$quality==i]))
+}
+#这部分有的没有通过正态性检验，答案中没有考虑这一点，大家见仁见智吧。
+#H0:不同品质的葡萄酒的酒精浓度没有差异；HA:不同品质的葡萄酒的酒精浓度有显著差异
+fit <- aov(winequality$alcohol~winequality$quality)
+summary(fit)
+```
+答：不同品质的葡萄酒的酒精浓度有显著差异
+
+5.通过多元线性回归建立一个品质预测模型，并说明哪些变量与品质显著相关。
+
+```{r}
+ff<-lm(quality~.,data = winequality)
+summary(ff)
+
+```
+
+挥发性酸度，氯化物，自由二氧化硫量，二氧化硫总量，pH值，硫酸盐和酒精浓度与品质显著相关。
+
+## question 4
+
+四、A study was performed to investigate new automobile purchases. A sample of 20 families was selected. Each family was surveyed to determine the age of their oldest vehicle and
+their total family income. A follow-up survey was conducted six months later to determine if they had actually purchased a new vehicle during that time period (y = 1 indicates yes and y = 0 indicates no). The data from this study are shown in the Table1.
+
+(a) Fit a logistic regression model to the data.(40’)
+
+(b) Interpret the model coefficients β1 and β2 and write the logistic regression model formula.(20’)
+
+(c) What is the estimated probability that a family with an income of $45,000 and a car that is five years old will purchase a new vehicle in the next six months?(40’)
+
+```{r}
+income_age <- read.csv("./data/homework-6.4-data.txt")
+fit<-glm(y~.,data = income_age,family = binomial())
+summary(fit)
+coef(fit)
+test_data<-data.frame(Income=45000,Age=5)
+test_data$probe<-predict(fit,newdata = test_data,type = "response")
+test_data
+```
+答：
+
+公式：$odds=exp(-7.047061+7.381679e-05x1+9.878861e-01x2)$
+
+## question 5
+五、数据文件“Drivers.csv”为对45名司机的调查结果，其中四个变量的含义为：
+
+1）x1：表示视力状况，它是一个分类变量，1表示好，0表示有问题；
+
+2）x2：年龄，数值型；
+
+3）x3：驾车教育，它也是一个分类变量，1表示参加过驾车教育，0表示没有；
+
+4）y：一个分类型输出变量，表示去年是否出过事故，1表示出过事故，0表示没有；
+
+问题：
+
+（1）请在R语言中调用logistic回归函数，计算视力状况、年龄、驾车教育与是否发生事故的logistic回归模型，并以“odds=……”的形式写出回归公式。（10分）
+
+（2）指出（1）得到的模型中哪些因素对是否发生事故有显著性影响。如果存在对是否发生事故没有显著性影响的因素，请去除这些因素后重新计算logistic回归模型，并以“p=……”的形式写出回归公式。（20分）
+
+（3）A是一名参加过驾车教育，但视力有问题的50岁老司机；B是一名没有参加过驾车教育，但视力良好的20岁新手。现在A、B都想在某保险公司投保，但按公司规定，被保险人必须满足“明年出事故的概率不高于40%”的条件才能予以承保。请预测A、B两者明年出事故的概率，并告诉保险公司谁可以投保。（20分）
+
+```{r}
+library(readr)
+drivers <- read_csv("./data/homework-6.5-Drivers.csv")
+fit.full<-glm(y~., data=drivers, family=binomial) 
+```
+回归公式为：$odds=exp(0.597610-1.496084x1-0.001595x2+0.315865x3)$
+
+```{r}
+fit_x1<-glm(y~x1, data=drivers, family=binomial)
+summary(fit_x1)
+
+```
+回归公式为$p=exp(0.6190-1.3728x1)/(1+exp(0.6190-1.3728x1))$
+```{r}
+test_data<- data.frame(x1=c(0,1))
+test_data$probe<-predict(fit_x1,test_data ,type='response')
+test_data
+```
+
+答：所以A、B两者明年出事故的概率分别为0.65和0.32,因只有B明年出事故的概率不高于40%，故只有B可以投保。
+
+## question 6
+六、Many digitized image of a fine needle aspirate (FNA) of a breast mass are collected and computed to predict the diagnosis of breast cancer(data.csv).
+
+Attribute information
+
+1) ID number
+
+2) Diagnosis (M = malignant, B = benign)
+
+
+Ten real-valued features are computed for each cell nucleus:
+
+	a) radius (mean of distances from center to points on the perimeter)
+	
+	b) texture (standard deviation of gray-scale values)
+	
+	c) perimeter
+	
+	d) area
+	
+	e) smoothness (local variation in radius lengths)
+	
+	f) compactness (perimeter^2 / area - 1.0)
+	
+	g) concavity (severity of concave portions of the contour)
+	
+	h) concave points (number of concave portions of the contour)
+	
+	i) symmetry 
+	
+	j) fractal dimension ("coastline approximation" - 1)
+	
+The mean, standard error, and "worst" or largest (mean of the threelargest values) of these features were computed for each image,resulting in 30 features.  For instance, field 3 is Mean Radius, field 13 is Radius SE, field 23 is Worst Radius.
+
+All feature values are recorded with four significant digits.
+In total, there are 357 benign and 212 malignant samples.
+
+You may need to use proper regression algorithm to train your data, and make predictions.
+
+Instructions:
+
+1)Use all mean features(such as: radius_mean,texture_mean…) to construct a logistic regression model
+```{r}
+library(readr)
+breast_cancer <- read_csv("./data/homework-6.6-data.csv")
+labels <- breast_cancer$diagnosis
+labels[labels=="M"] <- 1
+labels[labels=="B"] <- 0
+labels <- as.integer(labels)
+breast_cancer$lables <- labels
+fit.full <- glm(lables~radius_mean+texture_mean+perimeter_mean+area_mean+smoothness_mean+compactness_mean+concavity_mean+`concave points_mean`+symmetry_mean+fractal_dimension_mean,data = breast_cancer,family = binomial(),control=list(maxit=100))
+summary(fit.full)
+```
+
+>glm.fit:拟合機率算出来是数值零或一:这个问题实际是因为数据集问题，这个数据集本身接近线性可分了，所以导致模型过拟合。具体原因大家自己检索一下吧。可以看看这篇博客：https://www.cnblogs.com/runner-ljt/p/4574275.html
+
+2)Then try to reduce the number of features from your last model, construct another regression model, and you will need to write down the equation of your logistic regression model(Tips:  $$Logit P = α+β_{1}X_{1}+β_{2}X_{2}+..+β_{p}X_{p}$$)
+
+除去不显著相关的变量。
+```{r}
+fit.reduced<-glm(lables~texture_mean+area_mean+smoothness_mean+`concave points_mean`,data = breast_cancer,family = binomial(),control=list(maxit=100))
+summary(fit.reduced)
+```
+公式：$Logit P=-23.677816+0.362687x2+0.010342x4+59.47130x5+76.571210x8$
+
+3)Use proper test to test the difference between two models
+
+对两个模型进行ANOVA分析。
+```{r}
+#H0:两模型无显著差别；HA:两模型有显著差别
+anova(fit.full,fit.reduced,test = "Chisq")
+```
+p=0.1122>0.05，两模型无显著差别。
+
+4)You may split the data properly, use part of them to train your regression model and use another part to make predictions. Lastly, you may try to calculate the accuracy of your model.(Tips: To split the data, you can use the first 398 rows as training data, use the last 171 rows as prediction data.The predict function return a value between 0 and 1, 0.~0.5 belong to the first class, and 0.5~1 belong to second class in binary classification problems)
+
+```{r}
+train_data <- breast_cancer[1:398,]
+test_data <- breast_cancer[399:569,]
+train_fit<-glm(lables~texture_mean+area_mean+smoothness_mean+`concave points_mean`,data = train_data,family = binomial())
+summary(train_fit)
+test_data$probe<-predict(train_fit,newdata = test_data,type = "response")
+lables <- test_data$lables
+pred_lables <- ifelse(test_data$probe > 0.5, 1, 0)
+mean(pred_lables==lables)
+```
+The accuracy is 0.9064
+
+进一步地，可以看看它们的预测情况和ROC曲线以及AUC值。
+
+```{r}
+plot(sort(test_data$lables))
+plot(sort(test_data$probe))
+# install.packages("pROC")
+library('pROC')
+model_roc <- roc(test_data$lables,test_data$probe)
+plot(model_roc,print.auc = T)
+```
+AUC = 0.991，可以说明分类效果非常好。
+
